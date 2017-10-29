@@ -10,19 +10,11 @@ byte statusLed    = 13;
 
 byte sensorInterrupt = 0;  // 0 = digital pin 2
 byte sensorPin       = 2;
-
-// The hall-effect flow sensor outputs approximately 4.5 pulses per second per
-// litre/minute of flow.
 float calibrationFactor = 29;
-
-volatile byte pulseCount;  
-
+volatile byte pulseCount;
 float flowRate;
 unsigned int flowMilliLitres;
-unsigned long totalMilliLitres;
-
 unsigned long oldTime;
-
 
 WiFiClient client;
 
@@ -36,15 +28,11 @@ void setup() {
   pulseCount        = 0;
   flowRate          = 0.0;
   flowMilliLitres   = 0;
-  totalMilliLitres  = 0;
   oldTime           = 0;
 
   attachInterrupt(sensorInterrupt, pulseCounter, FALLING);
 
-
-
   // We start by connecting to a WiFi network
-
   Serial.println();
   Serial.println();
   Serial.print("Connecting to ");
@@ -65,8 +53,6 @@ void setup() {
   
 }
 
-
-
 void loop() {
 
 
@@ -74,34 +60,17 @@ void loop() {
   { 
     
     detachInterrupt(sensorInterrupt);
-        
-    
-    flowRate = ((1000.0 / (millis() - oldTime)) * pulseCount) / calibrationFactor;   
-    
+    flowRate = ((1000.0 / (millis() - oldTime)) * pulseCount) / calibrationFactor;    
     oldTime = millis();    
-    
-    flowMilliLitres = (flowRate / 60) * 1000;    
-    
-    totalMilliLitres += flowMilliLitres;
-      
-    unsigned int frac;
-
-       Serial.print("Flow rate: ");
-       flowRate = flowRate * 60;
+    flowMilliLitres = (flowRate / 60) * 1000;          
+    //unsigned int frac;
+    Serial.print("Flow rate: ");
+    flowRate = flowRate * 60;
     Serial.print(int(flowRate));  // Print the integer part of the variable
     Serial.print("L/timen");
     Serial.print("\t");       // Print tab space
 
-    // Print the cumulative total of litres flowed since starting
-    //Serial.print("Output Liquid Quantity: ");        
-    //Serial.print(totalMilliLitres);
-    //Serial.println("ml"); 
-    //Serial.print("\t");       // Print tab space
-    //Serial.print(totalMilliLitres/1000);
-    //Serial.print("ml");
-    
-
-    // Reset the pulse counter so we can start incrementing again
+   // Reset the pulse counter so we can start incrementing again
     pulseCount = 0;
     
     // Enable the interrupt again now that we've finished sending output
@@ -133,17 +102,7 @@ void loop() {
   client.print(String("GET ") + url + " HTTP/1.1\r\n" +
                "Host: " + host + "\r\n" + 
                "Connection: close\r\n\r\n");
-  delay(10);
-
-  // Read all the lines of the reply from server and print them to Serial
-  Serial.println("Respond:");
-  while(client.available()){
-    String line = client.readStringUntil('\r');
-    Serial.print(line);
-  }
-
-  Serial.println();
-  Serial.println("closing connection");
+  delay(10);  
 }
 
 void pulseCounter()
